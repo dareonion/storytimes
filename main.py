@@ -59,8 +59,10 @@ def fetch_events(url):
         categories = [category.text for category in item.findall("category")]
         categories_text = ", ".join(categories) if categories else "No categories"
         is_cancelled = item.find('bc:is_cancelled', ns).text
-        
-        if 'torytime' not in title:
+        for_babies = 'Kids: Babies' in categories
+        for_toddlers = 'Kids: Toddlers' in categories
+        for_families = 'Kids: Family Events' in categories
+        if 'torytime' not in title and not for_babies and not for_toddlers and not for_families:
             continue
         if is_cancelled != 'false':
             continue
@@ -99,7 +101,7 @@ def generate_ics(events):
         "VERSION:2.0",
         "CALSCALE:GREGORIAN",
         "METHOD:PUBLISH",
-        "X-WR-CALNAME:SCCL Storytimes",
+        "X-WR-CALNAME:SCCL Storytimes (no Gilroy, no Morgan Hill)",
         "X-WR-TIMEZONE:America/Los_Angeles",
         "X-WR-CALDESC:Santa Clara County Library Storytimes",
     ]
