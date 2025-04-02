@@ -95,7 +95,7 @@ def generate_ics(events):
         "X-WR-TIMEZONE:America/Los_Angeles",
         "X-WR-CALDESC:Santa Clara County Library Storytimes",
     ]
-
+    LAST_MODIFIED = "20250401T000000Z"
     DTSTAMP = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     for event in events:
         dtstart = event['start_date'].strftime("%Y%m%dT%H%M%SZ")
@@ -106,6 +106,7 @@ def generate_ics(events):
         url = event['link']
         uniq = dtstart+summary+location
         uid = hashlib.sha1(uniq.encode('utf8')).hexdigest()
+        
 
         lines.append("BEGIN:VEVENT")
         lines.append(f"DTSTART:{dtstart}")
@@ -116,6 +117,7 @@ def generate_ics(events):
         lines.append(f"LOCATION:{location}")
         lines.append(f"DESCRIPTION:{description}")
         lines.append(f"URL:{url}")
+        lines.append(f"LAST-MODIFIED:{LAST_MODIFIED}")
         lines.append("END:VEVENT")
     lines.append("END:VCALENDAR")
     return '\n'.join(lines)
