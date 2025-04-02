@@ -101,9 +101,9 @@ def generate_ics(events):
         "VERSION:2.0",
         "CALSCALE:GREGORIAN",
         "METHOD:PUBLISH",
-        "X-WR-CALNAME:SCCL Storytimes (no Gilroy, no Morgan Hill)",
+        "X-WR-CALNAME:SCCL Baby Events (no Gilroy, no Morgan Hill)",
         "X-WR-TIMEZONE:America/Los_Angeles",
-        "X-WR-CALDESC:Santa Clara County Library Storytimes",
+        "X-WR-CALDESC:Santa Clara County Library Baby Events",
     ]
     LAST_MODIFIED = "20250401T000000Z"
     DTSTAMP = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
@@ -138,7 +138,7 @@ def main():
     logging.basicConfig(level=logging.INFO, format=FORMAT)
     events = get_events()
     cal = generate_ics(events)
-    with open('storytimes.ics', 'w') as f:
+    with open('sccl_baby_events.ics', 'w') as f:
         f.write(cal)
 
 if __name__ == "__main__":
