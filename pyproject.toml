@@ -1,0 +1,14 @@
+[project]
+name = "storytimes"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "feedparser>=6.0.11",
+    "ics>=0.7.2",
+    "ipython>=9.0.2",
+    "pytz>=2025.2",
+    "requests>=2.32.3",
+    "ruff>=0.11.2",
+]
