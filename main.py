@@ -1,5 +1,6 @@
+import hashlib
 import xml.etree.ElementTree as ET
-from datetime import datetime
+from datetime import datetime, UTC
 
 import feedparser
 import pytz
@@ -85,23 +86,45 @@ def get_events(pages=20):
     return events
 
 def generate_ics(events):
-    c = Calendar()
+    lines = [
+        "BEGIN:VCALENDAR",
+        "PRODID:-//Darren",
+        "VERSION:2.0",
+        "METHOD:PUBLISH",
+        "X-WR-CALNAME:SCCL Storytimes",
+        "X-WR-TIMEZONE:America/Los_Angeles",
+        "X-WR-CALDESC:Santa Clara County Library Storytimes",
+    ]
+
+    DTSTAMP = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     for event in events:
-        e = Event()
-        e.name = event['title']
-        e.begin = event['start_date'].strftime("%Y%m%dT%H%M%SZ")
-        e.end = event['end_date'].strftime("%Y%m%dT%H%M%SZ")
-        e.location = event['location']
-        e.url = event['link']
-        e.description = event['description']
-        c.events.add(e)
-    return c
+        dtstart = event['start_date'].strftime("%Y%m%dT%H%M%SZ")
+        dtend = event['end_date'].strftime("%Y%m%dT%H%M%SZ")
+        summary = event['title']
+        location = event['location']
+        description = event['description']
+        url = event['link']
+        uniq = dtstart+summary+location
+        uid = hashlib.sha1(uniq.encode('utf8')).hexdigest()
+
+        lines.append("BEGIN:VEVENT")
+        lines.append(f"DTSTART:{dtstart}")
+        lines.append(f"DTEND:{dtend}")
+        lines.append(f"DTSTAMP:{DTSTAMP}")
+        lines.append(f"UID:{uid}")
+        lines.append(f"SUMMARY:{summary}")
+        lines.append(f"LOCATION:{location}")
+        lines.append(f"DESCRIPTION:{description}")
+        lines.append(f"URL:{url}")
+        lines.append("END:VEVENT")
+    lines.append("END:VCALENDAR")
+    return '\n'.join(lines)
 
 def main():
     events = get_events()
     cal = generate_ics(events)
     with open('storytimes.ics', 'w') as f:
-        f.writelines(cal)
+        f.write(cal)
 
 if __name__ == "__main__":
     main()
