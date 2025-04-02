@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import xml.etree.ElementTree as ET
 from datetime import datetime, UTC
 
@@ -7,6 +8,8 @@ import pytz
 import requests
 from ics import Calendar, Event
 
+LOGGER = logging.getLogger(__name__)
+FORMAT = "%(asctime)s - %(message)s"
 
 ns = {'bc': 'http://bibliocommons.com/rss/1.0/modules/event/'}
 
@@ -18,7 +21,9 @@ def parse_dtstr(dtstr):
     # return local_time
 
 def fetch_events(url):
+    LOGGER.info(f"retrieving url: {url}")
     response = requests.get(url)
+    LOGGER.info("retrieved")
     
     if response.status_code != 200:
         print("Error fetching the RSS feed.")
@@ -59,6 +64,8 @@ def fetch_events(url):
             continue
         if is_cancelled != 'false':
             continue
+        if 'organ' in location_name or 'ilroy' in location_name:
+            continue
         events.append({
             "title": title,
             "description": description,
@@ -88,8 +95,9 @@ def get_events(pages=20):
 def generate_ics(events):
     lines = [
         "BEGIN:VCALENDAR",
-        "PRODID:-//Darren",
+        "PRODID:-//Google Inc//Google Calendar 70.9054//EN",
         "VERSION:2.0",
+        "CALSCALE:GREGORIAN",
         "METHOD:PUBLISH",
         "X-WR-CALNAME:SCCL Storytimes",
         "X-WR-TIMEZONE:America/Los_Angeles",
@@ -102,7 +110,7 @@ def generate_ics(events):
         dtend = event['end_date'].strftime("%Y%m%dT%H%M%SZ")
         summary = event['title']
         location = event['location']
-        description = event['description']
+        description = event['description'].replace('\n', '\n ')
         url = event['link']
         uniq = dtstart+summary+location
         uid = hashlib.sha1(uniq.encode('utf8')).hexdigest()
@@ -116,13 +124,16 @@ def generate_ics(events):
         lines.append(f"SUMMARY:{summary}")
         lines.append(f"LOCATION:{location}")
         lines.append(f"DESCRIPTION:{description}")
-        lines.append(f"URL:{url}")
         lines.append(f"LAST-MODIFIED:{LAST_MODIFIED}")
+        lines.append(f"CREATED:{LAST_MODIFIED}")
+        lines.append("TRANSP:OPAQUE")
         lines.append("END:VEVENT")
     lines.append("END:VCALENDAR")
     return '\n'.join(lines)
 
 def main():
+    import logging
+    logging.basicConfig(level=logging.INFO, format=FORMAT)
     events = get_events()
     cal = generate_ics(events)
     with open('storytimes.ics', 'w') as f:
